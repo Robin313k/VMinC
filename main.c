@@ -291,10 +291,48 @@ void run(uint8_t *program, size_t length) {
 	}
 }
 
-// Main function
-int main() {
-    	// Example bytecode: push 2, push 3, add, print, halt
-    	uint8_t program[] = {
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+uint8_t* load_bytecode(const char* filename, size_t* size_out) {
+    FILE* file = fopen(filename, "rb");
+    if (!file) {
+        perror("Failed to open .obj file");
+        exit(1);
+    }
+
+    fseek(file, 0, SEEK_END);
+    size_t size = ftell(file);
+    rewind(file);
+
+    uint8_t* buffer = malloc(size);
+    if (!buffer) {
+        perror("Memory allocation failed");
+        exit(1);
+    }
+
+    fread(buffer, 1, size, file);
+    fclose(file);
+
+    *size_out = size;
+    return buffer;
+}
+
+int main(int argc, char* argv[]) {
+    size_t program_size;
+    uint8_t* program = load_bytecode(argv[1], &program_size);
+
+    run(program, program_size);  // Your VM's run function
+    free(program);
+    return 0;
+}
+
+
+
+    	/*
+		uint8_t program[] = {
 			OP_PUSH, 8,
 			OP_DUP,
 			OP_DUP,
@@ -306,9 +344,5 @@ int main() {
 			OP_DUP,
 			OP_JMP_IF_NOT_ZERO, 2,
 			OP_HALT
-	};
-
-
-    run(program, sizeof(program));
-	return 0;
-}
+		};
+		*/
